@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\GroupMemberController;
+use App\Http\Controllers\InviteController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -16,5 +17,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create');
     Route::post('/groups/{group}/members', [GroupMemberController::class, 'store'])->name('groups.members.store');
 });
+
+Route::get('/invites/{token}', [InviteController::class, 'show'])
+    ->middleware('signed')
+    ->name('invite.accept');
+
+Route::post('/invites/{token}', [InviteController::class, 'accept'])
+    ->name('invite.accept.store');
 
 require __DIR__.'/settings.php';

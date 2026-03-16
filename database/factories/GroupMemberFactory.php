@@ -24,8 +24,8 @@ class GroupMemberFactory extends Factory
             'group_id' => Group::factory(),
             'user_id' => User::factory(),
             'invite_email' => null,
-            'invite_token' => null,
-            'status' => GroupMemberStatus::Accepted,
+            'invite_token' => fake()->uuid(),
+            'status' => GroupMemberStatus::Accepted->value,
             'joined_at' => now(),
         ];
     }

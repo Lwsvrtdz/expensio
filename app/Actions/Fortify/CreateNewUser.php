@@ -24,10 +24,19 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
         ]);
+
+        if (session()->has('pending_invite_token')) {
+            app(\App\Http\Services\InviteService::class)
+                ->acceptForUser($user, (string) session('pending_invite_token'));
+
+            session()->forget('pending_invite_token');
+        }
+
+        return $user;
     }
 }

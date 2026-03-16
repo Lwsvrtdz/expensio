@@ -6,11 +6,13 @@ namespace Tests\Feature;
 
 use App\Enums\GroupMemberStatus;
 use App\Mail\GroupInvitation;
+use App\Models\ExpenseSplit;
 use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 
 uses(RefreshDatabase::class);
 
@@ -99,4 +101,61 @@ it('does not allow inviting the same email twice for a group', function () {
         ]);
 
     $response->assertSessionHasErrors('email');
+});
+
+it('allows a logged-in user to accept an invite and link expense splits', function () {
+    $user = User::factory()->create();
+    $group = Group::factory()->create(['created_by' => $user->id]);
+
+    $pending = GroupMember::factory()->create([
+        'group_id' => $group->id,
+        'user_id' => null,
+        'invite_email' => 'invited@example.com',
+        'status' => GroupMemberStatus::Pending,
+    ]);
+
+    $expenseSplit = ExpenseSplit::factory()->create([
+        'user_id' => null,
+        'member_email' => 'invited@example.com',
+    ]);
+
+    $url = URL::signedRoute('invite.accept', ['token' => $pending->invite_token]);
+
+    $this->actingAs($user)
+        ->get($url)
+        ->assertOk();
+
+    $this->actingAs($user)
+        ->post(route('invite.accept.store', ['token' => $pending->invite_token]))
+        ->assertRedirect(route('groups.show', $group->id));
+
+    $this->assertDatabaseHas('group_members', [
+        'group_id' => $group->id,
+        'user_id' => $user->id,
+        'status' => GroupMemberStatus::Accepted->value,
+        'invite_email' => null,
+    ]);
+
+    $this->assertDatabaseHas('expense_splits', [
+        'member_email' => 'invited@example.com',
+        'user_id' => $user->id,
+    ]);
+});
+
+it('stores pending invite token in session when unauthenticated user opens invite', function () {
+    $group = Group::factory()->create(['created_by' => User::factory()->create()->id]);
+
+    $pending = GroupMember::factory()->create([
+        'group_id' => $group->id,
+        'user_id' => null,
+        'invite_email' => 'someone@example.com',
+        'status' => GroupMemberStatus::Pending,
+    ]);
+
+    $url = URL::signedRoute('invite.accept', ['token' => $pending->invite_token]);
+
+    $response = $this->get($url);
+
+    $response->assertRedirect(route('register'));
+    $this->assertSame($pending->invite_token, session('pending_invite_token'));
 });
