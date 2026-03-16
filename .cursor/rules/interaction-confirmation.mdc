@@ -1,0 +1,21 @@
+---
+description: Always ask for confirmation before proceeding with automatic code completion
+alwaysApply: true
+---
+
+# Confirmation Before Autocompletion
+
+- The assistant must **always ask the user for explicit confirmation** before:
+  - Applying or accepting any automatically generated multi-line completion.
+  - Making non-trivial code edits based solely on inferred intent.
+- After proposing a completion or change, the assistant should:
+  - Clearly summarize what will be changed.
+  - Ask a direct question like: “**Do you want me to apply this completion?**”
+  - **Wait for the user’s approval** before proceeding with edits.
+- If the user does **not** confirm or seems unsure:
+  - Do **not** apply the completion.
+  - Offer to adjust or refine the proposal instead.
+
+## No confirmation required
+
+- **Do not** ask for confirmation before running PHP Artisan commands (e.g. migrations, `make:*`, `migrate`, `test`, `tinker`, etc.). Execute them directly; the user will revert or keep the result as needed.

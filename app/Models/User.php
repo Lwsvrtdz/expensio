@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -49,5 +50,25 @@ class User extends Authenticatable
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    public function groupsCreated(): HasMany
+    {
+        return $this->hasMany(Group::class, 'created_by');
+    }
+
+    public function expensesPaid(): HasMany
+    {
+        return $this->hasMany(Expense::class, 'paid_by');
+    }
+
+    public function groupMembers(): HasMany
+    {
+        return $this->hasMany(GroupMember::class);
+    }
+
+    public function expenseSplits(): HasMany
+    {
+        return $this->hasMany(ExpenseSplit::class);
     }
 }
