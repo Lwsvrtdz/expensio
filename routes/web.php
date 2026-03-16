@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\GroupMemberController;
@@ -12,7 +13,7 @@ Route::inertia('/', 'Welcome', [
 ])->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     Route::post('/expenses', [ExpenseController::class, 'storePersonal'])->name('expenses.store');
 
@@ -26,7 +27,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::get('/invites/{token}', [InviteController::class, 'show'])
-    ->middleware('signed')
     ->name('invite.accept');
 
 Route::post('/invites/{token}', [InviteController::class, 'accept'])

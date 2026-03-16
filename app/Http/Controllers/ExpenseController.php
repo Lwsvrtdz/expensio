@@ -21,7 +21,7 @@ class ExpenseController extends Controller
     {
         $actor = $this->actor();
 
-        $this->assertActorIsAcceptedMember($actor, $group);
+        $this->authorize('create', [Expense::class, $group]);
 
         $expense = Expense::query()->create([
             'group_id' => $group->id,
@@ -53,9 +53,7 @@ class ExpenseController extends Controller
 
     public function destroy(Expense $expense): RedirectResponse
     {
-        $actor = $this->actor();
-
-        abort_unless($expense->paid_by === $actor->id, 403);
+        $this->authorize('delete', $expense);
 
         $expense->delete();
 
@@ -112,14 +110,4 @@ class ExpenseController extends Controller
         ]);
     }
 
-    private function assertActorIsAcceptedMember(User $actor, Group $group): void
-    {
-        $isMember = GroupMember::query()
-            ->where('group_id', $group->id)
-            ->where('user_id', $actor->id)
-            ->where('status', GroupMemberStatus::Accepted->value)
-            ->exists();
-
-        abort_unless($isMember, 403);
-    }
 }

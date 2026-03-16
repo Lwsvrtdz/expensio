@@ -19,18 +19,25 @@ class GroupInvitation extends Mailable
     public function __construct(
         public GroupMember $member,
         public Group $group,
+        public string $inviterName,
     ) {
     }
 
     public function build(): self
     {
-        $url = URL::signedRoute('invite.accept', ['token' => $this->member->invite_token]);
+        $expiresAt = now()->addDays(7);
 
-        return $this->subject('You have been invited to join a group')
+        $url = URL::temporarySignedRoute('invite.accept', $expiresAt, [
+            'token' => $this->member->invite_token,
+        ]);
+
+        return $this->subject("You're invited to join {$this->group->name}")
             ->markdown('emails.group-invitation', [
                 'group' => $this->group,
                 'member' => $this->member,
                 'url' => $url,
+                'inviterName' => $this->inviterName,
+                'expiresAt' => $expiresAt,
             ]);
     }
 }

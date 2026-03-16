@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\CustomException;
 use App\Http\Services\InviteService;
 use App\Models\GroupMember;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
@@ -18,6 +19,10 @@ class InviteController extends Controller
 
     public function show(Request $request, string $token): Response|RedirectResponse
     {
+        if (! URL::hasValidSignature($request)) {
+            return Inertia::render('Invites/Expired');
+        }
+
         /** @var GroupMember|null $member */
         $member = GroupMember::query()
             ->with('group')

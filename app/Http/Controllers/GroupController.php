@@ -43,6 +43,8 @@ class GroupController extends Controller
 
     public function show(Request $request, Group $group): Response
     {
+        $this->authorize('view', $group);
+
         $group = $this->groups->show($request->user(), $group);
         $balances = $this->balances->forGroup($group);
 
@@ -54,6 +56,8 @@ class GroupController extends Controller
 
     public function destroy(Request $request, Group $group): RedirectResponse
     {
+        $this->authorize('delete', $group);
+
         $this->groups->destroy($request->user(), $group);
 
         return to_route('groups.index');

@@ -48,7 +48,9 @@ class GroupMemberService
             'joined_at' => null,
         ]);
 
-        Mail::to($email)->send(new GroupInvitation($member, $group));
+        $inviterName = $actor->name ?? $actor->email;
+
+        Mail::to($email)->send(new GroupInvitation($member, $group, $inviterName));
 
         return $member;
     }

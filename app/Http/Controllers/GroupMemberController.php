@@ -15,6 +15,8 @@ class GroupMemberController extends Controller
 
     public function store(InviteMemberRequest $request, Group $group): RedirectResponse
     {
+        $this->authorize('invite', $group);
+
         $this->groupMembers->store($request->user(), $group, $request);
 
         return back()->with('success', 'Member invited successfully.');
