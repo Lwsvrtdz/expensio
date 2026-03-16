@@ -3,14 +3,10 @@
 namespace App\Models;
 
 use App\Enums\GroupMemberStatus;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class GroupMember extends Model
+class GroupMember extends BaseModel
 {
-    use HasUuids;
-
     /**
      * @var list<string>
      */
