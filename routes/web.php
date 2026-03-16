@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\GroupMemberController;
 use App\Http\Controllers\InviteController;
@@ -13,9 +14,15 @@ Route::inertia('/', 'Welcome', [
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');
 
+    Route::post('/expenses', [ExpenseController::class, 'storePersonal'])->name('expenses.store');
+
     Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create');
+    Route::post('/groups/{group}/expenses', [ExpenseController::class, 'storeForGroup'])
+        ->name('groups.expenses.store');
     Route::post('/groups/{group}/members', [GroupMemberController::class, 'store'])->name('groups.members.store');
     Route::resource('groups', GroupController::class)->except(['edit', 'update', 'create']);
+
+    Route::delete('/expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
 });
 
 Route::get('/invites/{token}', [InviteController::class, 'show'])

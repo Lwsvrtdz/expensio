@@ -53,7 +53,12 @@ class GroupService
 
         return $group->load([
             'members.user',
-            'expenses.payer',
+            'expenses' => function ($query) {
+                $query->with([
+                    'payer',
+                    'splits.user',
+                ])->latest();
+            },
         ]);
     }
 

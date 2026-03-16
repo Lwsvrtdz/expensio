@@ -6,6 +6,8 @@ import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import GroupExpenseForm from '@/components/groups/GroupExpenseForm.vue';
+import GroupExpenseList from '@/components/groups/GroupExpenseList.vue';
 import groupsRoutes from '@/routes/groups';
 import membersRoutes from '@/routes/groups/members';
 import type { BreadcrumbItem } from '@/types';
@@ -30,7 +32,20 @@ type Group = {
     trip_date: string;
     created_by: string | number;
     members: Member[];
-    expenses: unknown[];
+    expenses: {
+        id: string | number;
+        description: string;
+        amount: number;
+        paid_by: string | number;
+        payer?: MemberUser;
+        splits: {
+            id: string | number;
+            amount: number;
+            settled: boolean;
+            member_email?: string | null;
+            user?: MemberUser;
+        }[];
+    }[];
 };
 
 const props = defineProps<{
@@ -216,24 +231,21 @@ const breadcrumbs: BreadcrumbItem[] = [
                 </div>
             </section>
 
-            <!-- Expenses placeholder -->
+            <!-- Expenses -->
             <section
-                class="space-y-3 rounded-lg border border-dashed border-sidebar-border/70 bg-background/40 p-4 text-sm text-muted-foreground dark:border-sidebar-border"
+                class="grid gap-4 rounded-lg border border-sidebar-border/70 bg-background/60 p-4 text-sm dark:border-sidebar-border md:grid-cols-[minmax(0,1.4fr)_minmax(0,2fr)]"
             >
-                <div class="flex items-center justify-between">
-                    <h2 class="text-sm font-semibold tracking-tight">
-                        Expenses
-                    </h2>
-                    <span class="text-xs uppercase tracking-wide">
-                        Coming soon
-                    </span>
-                </div>
+                <!-- Expense form -->
+                <GroupExpenseForm
+                    :group-id="group.id"
+                    :members="group.members"
+                />
 
-                <p>
-                    Expense tracking and settlement will appear here. You’ll be
-                    able to add expenses, see who owes what, and record
-                    settlements.
-                </p>
+                <!-- Expense list -->
+                <GroupExpenseList
+                    :expenses="group.expenses"
+                    :auth-user-id="authUser ? authUser.id : null"
+                />
             </section>
         </section>
     </AppLayout>
