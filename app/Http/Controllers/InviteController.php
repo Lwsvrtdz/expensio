@@ -5,9 +5,10 @@ namespace App\Http\Controllers;
 use App\Exceptions\CustomException;
 use App\Http\Services\InviteService;
 use App\Models\GroupMember;
+use Inertia\Inertia;
+use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 
 class InviteController extends Controller
 {
@@ -15,7 +16,7 @@ class InviteController extends Controller
         private readonly InviteService $invites,
     ) {}
 
-    public function show(Request $request, string $token): View|RedirectResponse
+    public function show(Request $request, string $token): Response|RedirectResponse
     {
         /** @var GroupMember|null $member */
         $member = GroupMember::query()
@@ -33,9 +34,8 @@ class InviteController extends Controller
             return redirect()->route('register');
         }
 
-        return view('invites.show', [
+        return Inertia::render('Invites/Show', [
             'group' => $member->group,
-            'member' => $member,
             'token' => $token,
         ]);
     }

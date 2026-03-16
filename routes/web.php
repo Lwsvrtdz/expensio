@@ -13,9 +13,9 @@ Route::inertia('/', 'Welcome', [
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');
 
-    Route::resource('groups', GroupController::class)->except(['edit', 'update', 'create']);
     Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create');
     Route::post('/groups/{group}/members', [GroupMemberController::class, 'store'])->name('groups.members.store');
+    Route::resource('groups', GroupController::class)->except(['edit', 'update', 'create']);
 });
 
 Route::get('/invites/{token}', [InviteController::class, 'show'])
@@ -25,4 +25,4 @@ Route::get('/invites/{token}', [InviteController::class, 'show'])
 Route::post('/invites/{token}', [InviteController::class, 'accept'])
     ->name('invite.accept.store');
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';
