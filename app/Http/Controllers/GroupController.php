@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreGroupRequest;
+use App\Http\Services\GroupBalanceService;
 use App\Http\Services\GroupService;
 use App\Models\Group;
 use Illuminate\Http\Request;
@@ -14,6 +15,7 @@ class GroupController extends Controller
 {
     public function __construct(
         private readonly GroupService $groups,
+        private readonly GroupBalanceService $balances,
     ) {}
 
     public function index(Request $request): Response
@@ -42,9 +44,11 @@ class GroupController extends Controller
     public function show(Request $request, Group $group): Response
     {
         $group = $this->groups->show($request->user(), $group);
+        $balances = $this->balances->forGroup($group);
 
         return Inertia::render('Groups/Show', [
             'group' => $group,
+            'balances' => $balances,
         ]);
     }
 

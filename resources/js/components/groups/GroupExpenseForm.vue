@@ -23,12 +23,48 @@ const props = defineProps<{
     members: Member[];
 }>();
 
+const memberOptions = computed(() =>
+    props.members
+        .map((member) => {
+            const user = member.user;
+            const email = user?.email ?? member.invite_email ?? null;
+
+            if (user) {
+                return {
+                    key: `user:${user.id}`,
+                    label: user.name || user.email,
+                };
+            }
+
+            if (email) {
+                return {
+                    key: `email:${email}`,
+                    label: email,
+                };
+            }
+
+            return null;
+        })
+        .filter((option): option is { key: string; label: string } => option !== null),
+);
+
+function optionsForRow(currentIndex: number) {
+    const selectedKeys = new Set(
+        expenseForm.splits
+            .map((split, index) =>
+                index === currentIndex ? null : split.memberKey,
+            )
+            .filter((key): key is string => !!key),
+    );
+
+    return memberOptions.value.filter((option) => !selectedKeys.has(option.key));
+}
+
 const expenseForm = useForm<{
     description: string;
     amount: string;
     splits: {
-        user_id: number | string | null;
-        member_email: string | null;
+        memberKey: string | null;
         amount: string;
     }[];
 }>({
@@ -51,19 +87,35 @@ function setSplitMode(mode: 'equal' | 'manual') {
 
     if (mode === 'manual' && expenseForm.splits.length === 0) {
         expenseForm.splits = props.members
-            .filter((member) => member.status === 'accepted')
-            .map((member) => ({
-                user_id: member.user?.id ?? null,
-                member_email: member.user?.email ?? member.invite_email ?? null,
-                amount: '',
-            }));
+            .map((member) => {
+                const user = member.user;
+                const email = user?.email ?? member.invite_email ?? null;
+
+                if (user) {
+                    return {
+                        memberKey: `user:${user.id}`,
+                        amount: '',
+                    };
+                }
+
+                if (email) {
+                    return {
+                        memberKey: `email:${email}`,
+                        amount: '',
+                    };
+                }
+
+                return {
+                    memberKey: null,
+                    amount: '',
+                };
+            });
     }
 }
 
 function addManualSplitRow() {
     expenseForm.splits.push({
-        user_id: null,
-        member_email: '',
+        memberKey: null,
         amount: '',
     });
 }
@@ -80,17 +132,36 @@ function submitExpense() {
                   splits: expenseForm.splits
                       .filter(
                           (split) =>
-                              (split.user_id || split.member_email) &&
-                              split.amount !== '',
+                              split.memberKey && split.amount !== '',
                       )
-                      .map((split) => ({
-                          user_id: split.user_id || null,
-                          member_email:
-                              split.user_id && !split.member_email
-                                  ? null
-                                  : split.member_email,
-                          amount: parseFloat(split.amount),
-                      })),
+                      .map((split) => {
+                          const [kind, value] = (split.memberKey ?? '').split(
+                              ':',
+                              2,
+                          );
+
+                          if (kind === 'user') {
+                              return {
+                                  user_id: value,
+                                  member_email: null,
+                                  amount: parseFloat(split.amount),
+                              };
+                          }
+
+                          if (kind === 'email') {
+                              return {
+                                  user_id: null,
+                                  member_email: value,
+                                  amount: parseFloat(split.amount),
+                              };
+                          }
+
+                          return {
+                              user_id: null,
+                              member_email: null,
+                              amount: parseFloat(split.amount),
+                          };
+                      }),
               }
             : {
                   ...expenseForm.data(),
@@ -203,12 +274,21 @@ function submitExpense() {
                         :key="index"
                         class="flex items-center gap-2"
                     >
-                        <Input
-                            v-model="split.member_email"
-                            type="email"
-                            class="flex-1"
-                            placeholder="friend@example.com"
-                        />
+                        <select
+                            v-model="split.memberKey"
+                            class="flex-1 rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        >
+                            <option :value="null" disabled>
+                                Select member
+                            </option>
+                            <option
+                                v-for="option in optionsForRow(index)"
+                                :key="option.key"
+                                :value="option.key"
+                            >
+                                {{ option.label }}
+                            </option>
+                        </select>
                         <Input
                             v-model="split.amount"
                             type="number"

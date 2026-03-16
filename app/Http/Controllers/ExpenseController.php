@@ -87,7 +87,7 @@ class ExpenseController extends Controller
         if ($group !== null) {
             $members = GroupMember::query()
                 ->where('group_id', $group->id)
-                ->where('status', GroupMemberStatus::Accepted->value)
+                //->where('status', GroupMemberStatus::Accepted->value)
                 ->get(['user_id', 'invite_email']);
 
             $recipients = [];
