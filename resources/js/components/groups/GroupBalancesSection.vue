@@ -11,7 +11,7 @@ type Balance = {
     amount: number;
 };
 
-const props = defineProps<{
+const { balances, authUserKey } = defineProps<{
     balances: Balance[];
     authUserKey: string | null;
 }>();

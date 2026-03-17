@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { dashboard, home } from '@/routes';
 import { Button } from '@/components/ui/button';
+import { dashboard, home } from '@/routes';
 </script>
 
 <template>

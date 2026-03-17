@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
-import type { BreadcrumbItem } from '@/types';
-import groupsRoutes from '@/routes/groups';
 import { dashboard } from '@/routes';
+import groupsRoutes from '@/routes/groups';
+import type { BreadcrumbItem } from '@/types';
 
 type Group = {
     id: string;

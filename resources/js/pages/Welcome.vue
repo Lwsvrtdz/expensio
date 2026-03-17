@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { Head, usePage } from '@inertiajs/vue3';
-import { dashboard, login, register } from '@/routes';
-import HeroSection from '@/components/marketing/HeroSection.vue';
-import HeroPreviewCard from '@/components/marketing/HeroPreviewCard.vue';
+import { computed } from 'vue';
 import FeaturesSection from '@/components/marketing/FeaturesSection.vue';
+import HeroPreviewCard from '@/components/marketing/HeroPreviewCard.vue';
+import HeroSection from '@/components/marketing/HeroSection.vue';
 import TestimonialsSection from '@/components/marketing/TestimonialsSection.vue';
 import TrustedBySection from '@/components/marketing/TrustedBySection.vue';
+import { dashboard, login, register } from '@/routes';
 
 withDefaults(
     defineProps<{

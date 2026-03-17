@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
-import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
 
 type MemberUser = {
     id: string | number;
@@ -27,7 +27,7 @@ type Expense = {
     splits: ExpenseSplit[];
 };
 
-const props = defineProps<{
+defineProps<{
     expenses: Expense[];
     authUserId: string | number | null;
     authUserEmail?: string | null;

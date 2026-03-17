@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { useForm } from '@inertiajs/vue3';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
-import { useForm } from '@inertiajs/vue3';
 import groupsRoutes from '@/routes/groups';
 
 type Group = {

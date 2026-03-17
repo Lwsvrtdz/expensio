@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { Head, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import AppLayout from '@/layouts/AppLayout.vue';
+import GroupBalancesSection from '@/components/groups/GroupBalancesSection.vue';
+import GroupExpensesSection from '@/components/groups/GroupExpensesSection.vue';
 import GroupHeader from '@/components/groups/GroupHeader.vue';
 import GroupMembersSection from '@/components/groups/GroupMembersSection.vue';
-import GroupExpensesSection from '@/components/groups/GroupExpensesSection.vue';
-import GroupBalancesSection from '@/components/groups/GroupBalancesSection.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { dashboard } from '@/routes';
 import groupsRoutes from '@/routes/groups';
 import type { BreadcrumbItem } from '@/types';
-import { dashboard } from '@/routes';
 
 type MemberUser = {
     id: string | number;

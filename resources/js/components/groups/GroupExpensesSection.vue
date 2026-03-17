@@ -30,7 +30,7 @@ type Expense = {
     }[];
 };
 
-const props = defineProps<{
+defineProps<{
     groupId: string;
     members: Member[];
     expenses: Expense[];

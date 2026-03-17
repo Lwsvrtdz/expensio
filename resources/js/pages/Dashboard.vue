@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { ArrowDownRight, ArrowUpRight, Users, Wallet } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { computed } from 'vue';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import groupsRoutes from '@/routes/groups';
 import type { BreadcrumbItem } from '@/types';
-import { usePage } from '@inertiajs/vue3';
 
 type Group = {
     id: string;
