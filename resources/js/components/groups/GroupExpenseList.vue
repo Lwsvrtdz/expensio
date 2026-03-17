@@ -21,7 +21,8 @@ type Expense = {
     id: string | number;
     description: string;
     amount: number;
-    paid_by: string | number;
+    paid_by: string | number | null;
+    payer_email?: string | null;
     payer?: MemberUser;
     splits: ExpenseSplit[];
 };
@@ -29,6 +30,7 @@ type Expense = {
 const props = defineProps<{
     expenses: Expense[];
     authUserId: string | number | null;
+    authUserEmail?: string | null;
 }>();
 
 const deleteForm = useForm({});
@@ -73,6 +75,7 @@ function destroyExpense(expenseId: string | number) {
                                 {{
                                     expense.payer?.name ||
                                     expense.payer?.email ||
+                                    expense.payer_email ||
                                     'Unknown'
                                 }}
                             </span>
@@ -84,7 +87,11 @@ function destroyExpense(expenseId: string | number) {
                     </div>
 
                     <Button
-                        v-if="authUserId !== null && authUserId === expense.paid_by"
+                        v-if="
+                            authUserId !== null &&
+                            (expense.paid_by === authUserId ||
+                                (expense.payer_email && authUserEmail === expense.payer_email))
+                        "
                         type="button"
                         size="icon-sm"
                         variant="ghost"

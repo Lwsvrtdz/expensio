@@ -21,6 +21,7 @@ type Member = {
 const props = defineProps<{
     groupId: string | number;
     members: Member[];
+    authUserId: string | number | null;
 }>();
 
 const memberOptions = computed(() =>
@@ -63,6 +64,7 @@ function optionsForRow(currentIndex: number) {
 const expenseForm = useForm<{
     description: string;
     amount: string;
+    payerKey: string | null;
     splits: {
         memberKey: string | null;
         amount: string;
@@ -70,10 +72,25 @@ const expenseForm = useForm<{
 }>({
     description: '',
     amount: '',
+    payerKey: null,
     splits: [],
 });
 
 const splitMode = ref<'equal' | 'manual'>('equal');
+
+const defaultPayerKey = computed(() => {
+    if (props.authUserId === null) {
+        return null;
+    }
+
+    const match = memberOptions.value.find((option) => {
+        const [kind, value] = option.key.split(':', 2);
+
+        return kind === 'user' && String(value) === String(props.authUserId);
+    });
+
+    return match ? match.key : null;
+});
 
 const manualTotal = computed(() =>
     expenseForm.splits.reduce(
@@ -129,6 +146,7 @@ function submitExpense() {
         splitMode.value === 'manual'
             ? {
                   ...expenseForm.data(),
+                  payer_key: expenseForm.payerKey ?? defaultPayerKey.value,
                   splits: expenseForm.splits
                       .filter(
                           (split) =>
@@ -165,6 +183,7 @@ function submitExpense() {
               }
             : {
                   ...expenseForm.data(),
+                  payer_key: expenseForm.payerKey ?? defaultPayerKey.value,
                   splits: [],
               };
 
@@ -220,6 +239,32 @@ function submitExpense() {
                     min="0"
                 />
                 <InputError :message="expenseForm.errors.amount" />
+            </div>
+
+            <div class="grid gap-2">
+                <label
+                    for="payer"
+                    class="text-xs font-medium text-foreground"
+                >
+                    Who paid?
+                </label>
+                <select
+                    id="payer"
+                    v-model="expenseForm.payerKey"
+                    class="rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                    <option :value="null" disabled>
+                        Select payer
+                    </option>
+                    <option
+                        v-for="option in memberOptions"
+                        :key="option.key"
+                        :value="option.key"
+                    >
+                        {{ option.label }}
+                    </option>
+                </select>
+                <InputError :message="expenseForm.errors.payer_key" />
             </div>
 
             <div class="space-y-2">

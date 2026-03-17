@@ -23,9 +23,19 @@ class ExpenseController extends Controller
 
         $this->authorize('create', [Expense::class, $group]);
 
+        /** @var string|null $payerKey */
+        $payerKey = $request->input('payer_key');
+
+        if ($payerKey === null || $payerKey === '') {
+            $payerKey = $request->input('payerKey');
+        }
+
+        [$paidBy, $payerEmail] = $this->resolvePayerForGroup($group, $payerKey, $actor);
+
         $expense = Expense::query()->create([
             'group_id' => $group->id,
-            'paid_by' => $actor->id,
+            'paid_by' => $paidBy,
+            'payer_email' => $payerEmail,
             'description' => $request->string('description')->toString(),
             'amount' => $request->float('amount'),
         ]);
@@ -42,6 +52,7 @@ class ExpenseController extends Controller
         $expense = Expense::query()->create([
             'group_id' => null,
             'paid_by' => $actor->id,
+            'payer_email' => null,
             'description' => $request->string('description')->toString(),
             'amount' => $request->float('amount'),
         ]);
@@ -108,6 +119,42 @@ class ExpenseController extends Controller
                 'member_email' => null,
             ],
         ]);
+    }
+
+    /**
+     * @return array{0: int|null, 1: string|null}
+     */
+    private function resolvePayerForGroup(Group $group, ?string $payerKey, User $actor): array
+    {
+        if ($payerKey === null || $payerKey === '') {
+            return [$actor->id, null];
+        }
+
+        [$kind, $value] = array_pad(explode(':', $payerKey, 2), 2, null);
+
+        if ($kind === 'user' && $value !== null) {
+            $userId = (int) $value;
+
+            $isMember = $group->members()
+                ->where('user_id', $userId)
+                ->exists();
+
+            if ($isMember) {
+                return [$userId, null];
+            }
+        }
+
+        if ($kind === 'email' && $value !== null) {
+            $isMember = $group->members()
+                ->where('invite_email', $value)
+                ->exists();
+
+            if ($isMember) {
+                return [null, $value];
+            }
+        }
+
+        return [$actor->id, null];
     }
 
 }

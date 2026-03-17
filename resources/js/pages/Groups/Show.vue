@@ -62,7 +62,9 @@ const props = defineProps<{
     balances: Balance[];
 }>();
 
-const page = usePage<{ auth: { user: { id: string | number; name?: string } } }>();
+const page = usePage<{
+    auth: { user: { id: string | number; name?: string; email?: string } };
+}>();
 const authUser = computed(() => page.props.auth.user);
 const authUserKey = computed(() =>
     authUser.value ? `user:${authUser.value.id}` : null,
@@ -105,6 +107,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                 :members="group.members"
                 :expenses="group.expenses"
                 :auth-user-id="authUser ? authUser.id : null"
+                :auth-user-email="authUser?.email ?? null"
             />
 
             <GroupBalancesSection

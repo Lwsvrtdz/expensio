@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Enums\GroupMemberStatus;
 use App\Mail\GroupInvitation;
+use App\Models\Expense;
 use App\Models\ExpenseSplit;
 use App\Models\Group;
 use App\Models\GroupMember;
@@ -139,6 +140,41 @@ it('allows a logged-in user to accept an invite and link expense splits', functi
     $this->assertDatabaseHas('expense_splits', [
         'member_email' => 'invited@example.com',
         'user_id' => $user->id,
+    ]);
+});
+
+it('upgrades expenses with payer_email to paid_by when invite is accepted', function () {
+    $creator = User::factory()->create();
+    $group = Group::factory()->create(['created_by' => $creator->id]);
+
+    $pending = GroupMember::factory()->create([
+        'group_id' => $group->id,
+        'user_id' => null,
+        'invite_email' => 'payer@example.com',
+        'status' => GroupMemberStatus::Pending,
+    ]);
+
+    $expense = Expense::factory()->create([
+        'group_id' => $group->id,
+        'paid_by' => null,
+        'payer_email' => 'payer@example.com',
+    ]);
+
+    $user = User::factory()->create(['email' => 'payer@example.com']);
+
+    $this->actingAs($user)
+        ->post(route('invite.accept.store', ['token' => $pending->invite_token]))
+        ->assertRedirect(route('groups.show', $group->id));
+
+    $expense->refresh();
+
+    expect($expense->paid_by)->toBe($user->id)
+        ->and($expense->payer_email)->toBeNull();
+
+    $this->assertDatabaseHas('expenses', [
+        'id' => $expense->id,
+        'paid_by' => $user->id,
+        'payer_email' => null,
     ]);
 });
 

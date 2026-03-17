@@ -13,6 +13,7 @@ class Expense extends BaseModel
     protected $fillable = [
         'group_id',
         'paid_by',
+        'payer_email',
         'description',
         'amount',
     ];

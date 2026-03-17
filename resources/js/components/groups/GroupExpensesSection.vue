@@ -35,6 +35,7 @@ const props = defineProps<{
     members: Member[];
     expenses: Expense[];
     authUserId: string | number | null;
+    authUserEmail: string | null;
 }>();
 </script>
 
@@ -45,11 +46,13 @@ const props = defineProps<{
         <GroupExpenseForm
             :group-id="groupId"
             :members="members"
+            :auth-user-id="authUserId"
         />
 
         <GroupExpenseList
             :expenses="expenses"
             :auth-user-id="authUserId"
+            :auth-user-email="authUserEmail"
         />
     </section>
 </template>

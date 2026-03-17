@@ -32,6 +32,7 @@ it('splits a group expense equally between accepted members when no splits are p
         ->post(route('groups.expenses.store', $group), [
             'description' => 'Dinner',
             'amount' => 10.00,
+            'payer_key' => 'user:'.$user->id,
         ])
         ->assertRedirect();
 

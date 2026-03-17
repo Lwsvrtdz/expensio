@@ -3,6 +3,7 @@
 namespace App\Http\Services;
 
 use App\Enums\GroupMemberStatus;
+use App\Models\Expense;
 use App\Models\ExpenseSplit;
 use App\Models\GroupMember;
 use App\Models\User;
@@ -39,9 +40,17 @@ class InviteService
                 ->update([
                     'user_id' => $user->id,
                 ]);
+
+            Expense::query()
+                ->where('group_id', $member->group_id)
+                ->whereNull('paid_by')
+                ->where('payer_email', $oldEmail)
+                ->update([
+                    'paid_by' => $user->id,
+                    'payer_email' => null,
+                ]);
         }
 
         return $member;
     }
 }
-

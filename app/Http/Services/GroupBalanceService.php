@@ -26,14 +26,27 @@ class GroupBalanceService
             /** @var User|null $payer */
             $payer = $expense->payer;
 
-            if (! $payer) {
+            $payerKey = null;
+            $payerLabel = null;
+            $payerType = null;
+
+            if ($payer) {
+                $payerKey = 'user:'.$payer->id;
+                $payerLabel = $payer->name ?? $payer->email;
+                $payerType = 'user';
+            } elseif ($expense->payer_email) {
+                $payerKey = 'email:'.$expense->payer_email;
+                $payerLabel = $expense->payer_email;
+                $payerType = 'email';
+            }
+
+            if ($payerKey === null) {
                 continue;
             }
 
-            $payerKey = 'user:'.$payer->id;
             $participants[$payerKey] = [
-                'label' => $payer->name ?? $payer->email,
-                'type' => 'user',
+                'label' => $payerLabel,
+                'type' => $payerType,
             ];
 
             foreach ($expense->splits as $split) {

@@ -20,6 +20,7 @@ class StoreExpenseRequest extends FormRequest
         return [
             'description' => ['required', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'min:0.01'],
+            'payer_key' => ['nullable', 'string'],
             'splits' => ['nullable', 'array'],
             'splits.*.user_id' => ['nullable', 'integer', 'exists:users,id'],
             'splits.*.member_email' => ['nullable', 'email'],
@@ -30,6 +31,46 @@ class StoreExpenseRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {
+            $group = $this->route('group');
+
+            if ($group !== null) {
+                /** @var string|null $payerKey */
+                $payerKey = $this->input('payer_key');
+
+                // Fallback for clients sending camelCase key
+                if ($payerKey === null || $payerKey === '') {
+                    $payerKey = $this->input('payerKey');
+                }
+
+                if ($payerKey === null || $payerKey === '') {
+                    $validator->errors()->add(
+                        'payer_key',
+                        'Please select who paid for this expense.',
+                    );
+                } else {
+                    [$kind, $value] = array_pad(explode(':', $payerKey, 2), 2, null);
+
+                    $isValidPayer = false;
+
+                    if ($kind === 'user' && $value !== null) {
+                        $isValidPayer = $group->members()
+                            ->where('user_id', (int) $value)
+                            ->exists();
+                    } elseif ($kind === 'email' && $value !== null) {
+                        $isValidPayer = $group->members()
+                            ->where('invite_email', $value)
+                            ->exists();
+                    }
+
+                    if (! $isValidPayer) {
+                        $validator->errors()->add(
+                            'payer_key',
+                            'The selected payer must be a member of this group.',
+                        );
+                    }
+                }
+            }
+
             /** @var array<int, array{amount?: float|int}>|null $splits */
             $splits = $this->input('splits');
 
@@ -43,7 +84,7 @@ class StoreExpenseRequest extends FormRequest
                  * @param float $carry
                  * @param array{amount?: float|int} $item
                  */
-                fn (float $carry, array $item): float => $carry + (float) ($item['amount'] ?? 0),
+                fn(float $carry, array $item): float => $carry + (float) ($item['amount'] ?? 0),
                 0.0,
             );
 
@@ -58,4 +99,3 @@ class StoreExpenseRequest extends FormRequest
         });
     }
 }
-
