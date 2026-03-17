@@ -97,6 +97,11 @@ const breadcrumbs: BreadcrumbItem[] = [
         <section class="flex flex-col gap-6 p-4">
             <GroupHeader :group="group" :is-creator="isCreator" />
 
+            <GroupBalancesSection
+                :balances="balances"
+                :auth-user-key="authUserKey"
+            />
+
             <GroupMembersSection
                 :group-id="group.id"
                 :members="group.members"
@@ -110,10 +115,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                 :auth-user-email="authUser?.email ?? null"
             />
 
-            <GroupBalancesSection
-                :balances="balances"
-                :auth-user-key="authUserKey"
-            />
+            
         </section>
     </AppLayout>
 </template>
