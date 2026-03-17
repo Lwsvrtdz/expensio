@@ -24,6 +24,7 @@ class StoreExpenseRequest extends FormRequest
             'splits' => ['nullable', 'array'],
             'splits.*.user_id' => ['nullable', 'integer', 'exists:users,id'],
             'splits.*.member_email' => ['nullable', 'email'],
+            'splits.*.member_key' => ['nullable', 'string'],
             'splits.*.amount' => ['required_with:splits', 'numeric', 'min:0'],
         ];
     }
@@ -81,10 +82,9 @@ class StoreExpenseRequest extends FormRequest
             $total = array_reduce(
                 $splits,
                 /**
-                 * @param float $carry
-                 * @param array{amount?: float|int} $item
+                 * @param  array{amount?: float|int}  $item
                  */
-                fn(float $carry, array $item): float => $carry + (float) ($item['amount'] ?? 0),
+                fn (float $carry, array $item): float => $carry + (float) ($item['amount'] ?? 0),
                 0.0,
             );
 

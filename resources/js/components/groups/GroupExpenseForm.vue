@@ -102,31 +102,8 @@ const manualTotal = computed(() =>
 function setSplitMode(mode: 'equal' | 'manual') {
     splitMode.value = mode;
 
-    if (mode === 'manual' && expenseForm.splits.length === 0) {
-        expenseForm.splits = props.members
-            .map((member) => {
-                const user = member.user;
-                const email = user?.email ?? member.invite_email ?? null;
-
-                if (user) {
-                    return {
-                        memberKey: `user:${user.id}`,
-                        amount: '',
-                    };
-                }
-
-                if (email) {
-                    return {
-                        memberKey: `email:${email}`,
-                        amount: '',
-                    };
-                }
-
-                return {
-                    memberKey: null,
-                    amount: '',
-                };
-            });
+    if (mode === 'manual') {
+        expenseForm.splits = [];
     }
 }
 
@@ -203,7 +180,7 @@ function submitExpense() {
         <h2 class="text-sm font-semibold tracking-tight">Add expense</h2>
 
         <form
-            class="space-y-3 rounded-md border border-dashed border-sidebar-border/70 p-3 dark:border-sidebar-border"
+            class="space-y-4 rounded-md border border-dashed border-sidebar-border/70 p-3 dark:border-sidebar-border"
             @submit.prevent="submitExpense"
         >
             <div class="grid gap-2">
@@ -269,11 +246,12 @@ function submitExpense() {
 
             <div class="space-y-2">
                 <p class="text-xs font-medium text-foreground">Split mode</p>
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
                     <Button
                         type="button"
                         size="xs"
                         :variant="splitMode === 'equal' ? 'default' : 'outline'"
+                        class="min-h-9 flex-1 px-3 sm:flex-none"
                         @click="setSplitMode('equal')"
                     >
                         Split equally
@@ -284,6 +262,7 @@ function submitExpense() {
                         :variant="
                             splitMode === 'manual' ? 'default' : 'outline'
                         "
+                        class="min-h-9 flex-1 px-3 sm:flex-none"
                         @click="setSplitMode('manual')"
                     >
                         Enter shares manually
@@ -299,7 +278,7 @@ function submitExpense() {
                 v-if="splitMode === 'manual'"
                 class="space-y-3 rounded-md bg-muted/40 p-3"
             >
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-center justify-between gap-2">
                     <p class="text-xs font-medium text-foreground">
                         Manual splits
                     </p>
@@ -317,11 +296,11 @@ function submitExpense() {
                     <div
                         v-for="(split, index) in expenseForm.splits"
                         :key="index"
-                        class="flex items-center gap-2"
+                        class="grid grid-cols-[minmax(0,1fr)_5rem_2rem] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_5.5rem_2.25rem]"
                     >
                         <select
                             v-model="split.memberKey"
-                            class="flex-1 rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            class="h-9 w-full min-w-0 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                         >
                             <option :value="null" disabled>
                                 Select member
@@ -339,14 +318,15 @@ function submitExpense() {
                             type="number"
                             step="0.01"
                             min="0"
-                            class="w-24"
+                            class="h-9 w-full"
                             placeholder="0.00"
                         />
                         <Button
                             type="button"
                             size="icon"
                             variant="ghost"
-                            class="h-8 w-8"
+                            class="h-9 w-8 shrink-0 self-center px-0 text-base"
+                            aria-label="Remove split"
                             @click="removeManualSplitRow(index)"
                         >
                             ×
@@ -354,7 +334,7 @@ function submitExpense() {
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between text-xs">
+                <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
                     <span class="text-muted-foreground">
                         Manual total:
                         <span
@@ -393,4 +373,3 @@ function submitExpense() {
         </form>
     </div>
 </template>
-

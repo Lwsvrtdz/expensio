@@ -179,6 +179,61 @@ it('stores manual splits exactly as submitted', function () {
     ]);
 });
 
+it('stores manual splits when sent with memberKey format', function () {
+    $actor = User::factory()->create();
+    $other = User::factory()->create();
+    $group = Group::factory()->create(['created_by' => $actor->id]);
+
+    addAcceptedMember($group, $actor);
+    addAcceptedMember($group, $other);
+    addPendingMember($group, 'grey@test.com');
+    addPendingMember($group, 'Louisevirtudazo@gmail.com');
+
+    $this->actingAs($actor)
+        ->post(route('groups.expenses.store', $group), [
+            'description' => 'asd',
+            'amount' => 40,
+            'payerKey' => 'user:' . $actor->id,
+            'splits' => [
+                ['memberKey' => 'user:' . $actor->id, 'amount' => 10],
+                ['memberKey' => 'email:grey@test.com', 'amount' => 10],
+                ['memberKey' => 'user:' . $other->id, 'amount' => 10],
+                ['memberKey' => 'email:Louisevirtudazo@gmail.com', 'amount' => 10],
+            ],
+        ])
+        ->assertRedirect();
+
+    /** @var Expense $expense */
+    $expense = Expense::query()->with('splits')->firstOrFail();
+
+    expect($expense->splits)->toHaveCount(4);
+
+    $this->assertDatabaseHas('expense_splits', [
+        'expense_id' => $expense->id,
+        'user_id' => $actor->id,
+        'member_email' => null,
+        'amount' => 10,
+    ]);
+    $this->assertDatabaseHas('expense_splits', [
+        'expense_id' => $expense->id,
+        'user_id' => $other->id,
+        'member_email' => null,
+        'amount' => 10,
+    ]);
+    $this->assertDatabaseHas('expense_splits', [
+        'expense_id' => $expense->id,
+        'user_id' => null,
+        'member_email' => 'grey@test.com',
+        'amount' => 10,
+    ]);
+    $this->assertDatabaseHas('expense_splits', [
+        'expense_id' => $expense->id,
+        'user_id' => null,
+        'member_email' => 'Louisevirtudazo@gmail.com',
+        'amount' => 10,
+    ]);
+});
+
 it('rejects an invalid payer key for a group expense', function () {
     $actor = User::factory()->create();
     $group = Group::factory()->create(['created_by' => $actor->id]);

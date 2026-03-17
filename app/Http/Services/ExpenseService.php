@@ -2,7 +2,6 @@
 
 namespace App\Http\Services;
 
-use App\Enums\GroupMemberStatus;
 use App\Http\Requests\StoreExpenseRequest;
 use App\Models\Expense;
 use App\Models\Group;
@@ -91,18 +90,49 @@ class ExpenseService
     }
 
     /**
-     * @param array<int, array{user_id?: int|null, member_email?: string|null, amount?: float|int}> $splits
+     * @param  array<int, array{user_id?: int|null, member_email?: string|null, member_key?: string|null, memberKey?: string|null, amount?: float|int}>  $splits
      */
     private function persistManualSplits(Expense $expense, array $splits): void
     {
         foreach ($splits as $split) {
+            [$userId, $memberEmail] = $this->resolveSplitParticipant($split);
+
             $expense->splits()->create([
-                'user_id' => $split['user_id'] ?? null,
-                'member_email' => $split['member_email'] ?? null,
+                'user_id' => $userId,
+                'member_email' => $memberEmail,
                 'amount' => (float) ($split['amount'] ?? 0),
                 'settled' => false,
             ]);
         }
+    }
+
+    /**
+     * Resolve a split entry to user_id and member_email. Accepts either explicit user_id/member_email
+     * or a member_key/memberKey (e.g. "user:1", "email:foo@example.com").
+     *
+     * @param  array{user_id?: int|null, member_email?: string|null, member_key?: string|null, memberKey?: string|null}  $split
+     * @return array{0: int|null, 1: string|null}
+     */
+    private function resolveSplitParticipant(array $split): array
+    {
+        $memberKey = $split['member_key'] ?? $split['memberKey'] ?? null;
+
+        if ($memberKey !== null && $memberKey !== '') {
+            [$kind, $value] = array_pad(explode(':', $memberKey, 2), 2, null);
+
+            if ($kind === 'user' && $value !== null) {
+                return [(int) $value, null];
+            }
+
+            if ($kind === 'email' && $value !== null) {
+                return [null, $value];
+            }
+        }
+
+        $userId = isset($split['user_id']) ? (int) $split['user_id'] : null;
+        $memberEmail = isset($split['member_email']) ? (string) $split['member_email'] : null;
+
+        return [$userId ?: null, $memberEmail !== '' ? $memberEmail : null];
     }
 
     /**
@@ -122,7 +152,7 @@ class ExpenseService
         return GroupMember::query()
             ->where('group_id', $group->id)
             ->get(['user_id', 'invite_email'])
-            ->map(fn(GroupMember $member): array => [
+            ->map(fn (GroupMember $member): array => [
                 'user_id' => $member->user_id,
                 'member_email' => $member->invite_email,
             ])
