@@ -2,6 +2,8 @@
 import { useForm } from '@inertiajs/vue3';
 import { Trash2 } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
+import GroupExpenseEditModal from '@/components/groups/GroupExpenseEditModal.vue';
+import { ref } from 'vue';
 
 type MemberUser = {
     id: string | number;
@@ -27,11 +29,15 @@ type Expense = {
     splits: ExpenseSplit[];
 };
 
-defineProps<{
+const props = defineProps<{
     expenses: Expense[];
     authUserId: string | number | null;
     authUserEmail?: string | null;
+    members: Member[];
 }>();
+
+const showEdit = ref(false);
+const selectedExpense = ref<Expense | null>(null);
 
 const deleteForm = useForm({});
 
@@ -43,6 +49,11 @@ function destroyExpense(expenseId: string | number) {
     deleteForm.delete(`/expenses/${expenseId}`, {
         preserveScroll: true,
     });
+}
+
+function openEdit(expense: Expense) {
+    selectedExpense.value = expense;
+    showEdit.value = true;
 }
 </script>
 
@@ -86,21 +97,38 @@ function destroyExpense(expenseId: string | number) {
                         </p>
                     </div>
 
-                    <Button
-                        v-if="
-                            authUserId !== null &&
-                            (expense.paid_by === authUserId ||
-                                (expense.payer_email && authUserEmail === expense.payer_email))
-                        "
-                        type="button"
-                        size="icon-sm"
-                        variant="ghost"
-                        class="text-destructive hover:bg-destructive/10"
-                        @click="destroyExpense(expense.id)"
-                    >
-                        <Trash2 class="h-3 w-3" />
-                        <span class="sr-only">Delete</span>
-                    </Button>
+                    <div class="flex items-center gap-1">
+                        <Button
+                            v-if="
+                                authUserId !== null &&
+                                (expense.paid_by === authUserId ||
+                                    (expense.payer_email && authUserEmail === expense.payer_email))
+                            "
+                            type="button"
+                            size="icon-sm"
+                            variant="ghost"
+                            class="text-muted-foreground hover:bg-muted/40"
+                            @click="openEdit(expense)"
+                        >
+                            Edit
+                            <span class="sr-only">Edit</span>
+                        </Button>
+                        <Button
+                            v-if="
+                                authUserId !== null &&
+                                (expense.paid_by === authUserId ||
+                                    (expense.payer_email && authUserEmail === expense.payer_email))
+                            "
+                            type="button"
+                            size="icon-sm"
+                            variant="ghost"
+                            class="text-destructive hover:bg-destructive/10"
+                            @click="destroyExpense(expense.id)"
+                        >
+                            <Trash2 class="h-3 w-3" />
+                            <span class="sr-only">Delete</span>
+                        </Button>
+                    </div>
                 </div>
 
                 <div
@@ -131,6 +159,13 @@ function destroyExpense(expenseId: string | number) {
                 </div>
             </li>
         </ul>
+
+        <GroupExpenseEditModal
+            v-if="selectedExpense"
+            v-model="showEdit"
+            :members="props.members"
+            :expense="selectedExpense"
+        />
     </div>
 </template>
 

@@ -30,7 +30,7 @@ type Expense = {
     }[];
 };
 
-defineProps<{
+const props = defineProps<{
     groupId: string;
     members: Member[];
     expenses: Expense[];
@@ -44,15 +44,16 @@ defineProps<{
         class="grid gap-4 rounded-lg border border-sidebar-border/70 bg-background/60 p-4 text-sm dark:border-sidebar-border md:grid-cols-[minmax(0,1.4fr)_minmax(0,2fr)]"
     >
         <GroupExpenseForm
-            :group-id="groupId"
-            :members="members"
-            :auth-user-id="authUserId"
+            :group-id="props.groupId"
+            :members="props.members"
+            :auth-user-id="props.authUserId"
         />
 
         <GroupExpenseList
-            :expenses="expenses"
-            :auth-user-id="authUserId"
-            :auth-user-email="authUserEmail"
+            :expenses="props.expenses"
+            :auth-user-id="props.authUserId"
+            :auth-user-email="props.authUserEmail"
+            :members="props.members"
         />
     </section>
 </template>

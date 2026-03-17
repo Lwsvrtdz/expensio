@@ -23,6 +23,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/groups/{group}/members', [GroupMemberController::class, 'store'])->name('groups.members.store');
     Route::resource('groups', GroupController::class)->except(['edit', 'update', 'create']);
 
+    Route::patch('/expenses/{expense}', [ExpenseController::class, 'update'])->name('expenses.update');
     Route::delete('/expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
 });
 

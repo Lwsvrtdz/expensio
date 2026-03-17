@@ -21,5 +21,10 @@ class ExpensePolicy
     {
         return $expense->paid_by === $user->id;
     }
+
+    public function update(User $user, Expense $expense): bool
+    {
+        return $expense->paid_by === $user->id;
+    }
 }
 

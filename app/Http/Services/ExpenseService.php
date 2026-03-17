@@ -3,6 +3,8 @@
 namespace App\Http\Services;
 
 use App\Http\Requests\StoreExpenseRequest;
+use App\Http\Requests\UpdateExpenseRequest;
+use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Expense;
 use App\Models\Group;
 use App\Models\GroupMember;
@@ -53,8 +55,39 @@ class ExpenseService
         });
     }
 
+    public function updateExpense(UpdateExpenseRequest $request, Expense $expense, User $actor): Expense
+    {
+        return DB::transaction(function () use ($request, $expense, $actor): Expense {
+            $group = $expense->group;
+
+            if ($group !== null) {
+                [$paidBy, $payerEmail] = $this->resolveGroupPayer(
+                    $group,
+                    $this->extractPayerKey($request),
+                    $actor,
+                );
+            } else {
+                $paidBy = $actor->id;
+                $payerEmail = null;
+            }
+
+            $expense->update([
+                'paid_by' => $paidBy,
+                'payer_email' => $payerEmail,
+                'description' => $request->string('description')->toString(),
+                'amount' => $request->float('amount'),
+            ]);
+
+            $expense->splits()->delete();
+
+            $this->persistSplits($request, $expense, $group, $actor);
+
+            return $expense;
+        });
+    }
+
     private function createExpenseRecord(
-        StoreExpenseRequest $request,
+        FormRequest $request,
         ?Group $group,
         ?int $paidBy,
         ?string $payerEmail,
@@ -69,7 +102,7 @@ class ExpenseService
     }
 
     private function persistSplits(
-        StoreExpenseRequest $request,
+        FormRequest $request,
         Expense $expense,
         ?Group $group,
         User $actor,
@@ -196,7 +229,7 @@ class ExpenseService
         return [$actor->id, null];
     }
 
-    private function extractPayerKey(StoreExpenseRequest $request): ?string
+    private function extractPayerKey(FormRequest $request): ?string
     {
         /** @var string|null $payerKey */
         $payerKey = $request->input('payer_key');

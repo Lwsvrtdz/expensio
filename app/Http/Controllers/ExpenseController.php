@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreExpenseRequest;
+use App\Http\Requests\UpdateExpenseRequest;
 use App\Http\Services\ExpenseService;
 use App\Models\Expense;
 use App\Models\Group;
@@ -39,5 +40,14 @@ class ExpenseController extends Controller
         $expense->delete();
 
         return back()->with('success', 'Expense deleted.');
+    }
+
+    public function update(UpdateExpenseRequest $request, Expense $expense): RedirectResponse
+    {
+        $this->authorize('update', $expense);
+
+        $this->expenses->updateExpense($request, $expense, $this->actor());
+
+        return back()->with('success', 'Expense updated.');
     }
 }

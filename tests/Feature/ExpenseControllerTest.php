@@ -319,3 +319,42 @@ it('only allows the payer to delete an expense', function () {
         'id' => $expense->id,
     ]);
 });
+
+it('only allows the payer to update an expense', function () {
+    $payer = User::factory()->create();
+    $other = User::factory()->create();
+    $group = Group::factory()->create(['created_by' => $payer->id]);
+
+    addAcceptedMember($group, $payer);
+    addAcceptedMember($group, $other);
+
+    /** @var Expense $expense */
+    $expense = Expense::factory()->create([
+        'group_id' => $group->id,
+        'paid_by' => $payer->id,
+        'description' => 'Original',
+        'amount' => 10.00,
+    ]);
+
+    $this->actingAs($other)
+        ->patch(route('expenses.update', $expense), [
+            'description' => 'Updated',
+            'amount' => 20.00,
+            'payer_key' => 'user:' . $payer->id,
+        ])
+        ->assertForbidden();
+
+    $this->actingAs($payer)
+        ->patch(route('expenses.update', $expense), [
+            'description' => 'Updated',
+            'amount' => 20.00,
+            'payer_key' => 'user:' . $payer->id,
+        ])
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('expenses', [
+        'id' => $expense->id,
+        'description' => 'Updated',
+        'amount' => 20.00,
+    ]);
+});
