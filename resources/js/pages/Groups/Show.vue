@@ -97,15 +97,19 @@ const breadcrumbs: BreadcrumbItem[] = [
         <section class="flex flex-col gap-6 p-4">
             <GroupHeader :group="group" :is-creator="isCreator" />
 
-            <GroupBalancesSection
-                :balances="balances"
-                :auth-user-key="authUserKey"
-            />
+            <div
+                class="grid gap-4 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]"
+            >
+                <GroupBalancesSection
+                    :balances="balances"
+                    :auth-user-key="authUserKey"
+                />
 
-            <GroupMembersSection
-                :group-id="group.id"
-                :members="group.members"
-            />
+                <GroupMembersSection
+                    :group-id="group.id"
+                    :members="group.members"
+                />
+            </div>
 
             <GroupExpensesSection
                 :group-id="group.id"

@@ -39,19 +39,19 @@
                     <figure
                         class="rounded-2xl bg-white/10 p-4 shadow-lg backdrop-blur"
                     >
-                        <div class="flex items-center gap-3">
+                        <figcaption class="flex items-center gap-3">
                             <div
                                 class="h-9 w-9 rounded-2xl bg-gradient-to-tr from-amber-400 to-rose-500"
                             />
-                            <figcaption>
+                            <div>
                                 <p class="text-sm font-semibold">
                                     Samir • Trip Planner
                                 </p>
                                 <p class="text-[11px] text-sky-50/80">
                                     Barcelona friend group
                                 </p>
-                            </figcaption>
-                        </div>
+                            </div>
+                        </figcaption>
                         <p class="mt-3 text-[13px] leading-relaxed text-sky-50">
                             “We used to sync spreadsheets after every dinner.
                             Now everyone just snaps a photo, adds an expense, and
